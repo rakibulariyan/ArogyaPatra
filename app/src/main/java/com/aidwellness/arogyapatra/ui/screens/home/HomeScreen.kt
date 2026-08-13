@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aidwellness.arogyapatra.ads.BannerAdView
+import com.aidwellness.arogyapatra.ads.rememberAdView
 import com.aidwellness.arogyapatra.data.repository.ArogyaRepository
 import com.aidwellness.arogyapatra.pdf.PdfGenerator
 import com.aidwellness.arogyapatra.ui.components.*
@@ -41,6 +42,7 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val adView = rememberAdView()
 
     val doctorProfile by repository.getDoctorProfile().collectAsState(initial = null)
     val clinicProfile by repository.getClinicProfile().collectAsState(initial = null)
@@ -230,9 +232,11 @@ fun HomeScreen(
         }
 
         // 5. Non-Intrusive AdMob Banner
-        item {
-            Spacer(modifier = Modifier.height(4.dp))
-            BannerAdView()
+        adView?.let { ad ->
+            item {
+                Spacer(modifier = Modifier.height(4.dp))
+                BannerAdView(adView = ad)
+            }
         }
 
         // 6. Legal Safeguard Banner

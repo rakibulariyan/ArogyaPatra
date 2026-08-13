@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import com.aidwellness.arogyapatra.data.repository.ArogyaRepository
 import com.aidwellness.arogyapatra.ui.components.LegalSafeguardBanner
 import com.aidwellness.arogyapatra.ui.theme.EmeraldTealPrimary
@@ -30,7 +31,17 @@ fun SettingsScreen(
     onPrivacyPolicyClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val doctorProfile by repository.getDoctorProfile().collectAsState(initial = null)
+
+    val versionName = remember(context) {
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            packageInfo.versionName
+        } catch (e: Exception) {
+            "1.0.1"
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -120,7 +131,7 @@ fun SettingsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "ArogyaPatra v1.0.0", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)))
+                Text(text = "ArogyaPatra v$versionName", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)))
                 Text(text = "Company: Aidwellness Health Tech", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)))
             }
         }
