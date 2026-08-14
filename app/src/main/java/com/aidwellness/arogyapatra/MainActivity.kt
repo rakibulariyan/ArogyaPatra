@@ -27,9 +27,13 @@ class MainActivity : FragmentActivity() {
         val repository = ArogyaRepository(db)
 
         // Initialize AdMob & Request UMP Consent at App Startup
+        android.util.Log.i("MainActivity", "onCreate: Calling ConsentManager.gatherConsent")
         ConsentManager.gatherConsent(this) { canRequest ->
+            android.util.Log.i("MainActivity", "onCreate: Consent callback fired. canRequest=$canRequest")
             if (canRequest) {
                 AdManager.initialize(applicationContext)
+                (application as? ArogyaApplication)?.appOpenAdManager?.loadAd()
+                com.aidwellness.arogyapatra.ads.InterstitialAdManager.loadAd(applicationContext)
             }
         }
 

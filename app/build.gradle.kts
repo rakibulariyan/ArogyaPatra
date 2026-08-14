@@ -15,12 +15,12 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.aidwellness.arogyapatra"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.aidwellness.arogyapatra"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 2
         versionName = "1.0.1"
 
@@ -41,7 +41,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -71,6 +72,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.navigation.compose)
 
     // Room Database

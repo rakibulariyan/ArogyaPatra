@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aidwellness.arogyapatra.ads.BannerAdView
 import com.aidwellness.arogyapatra.ads.rememberAdView
+import com.aidwellness.arogyapatra.ads.rememberNativeAd
+import com.aidwellness.arogyapatra.ads.NativeAdCard
 import com.aidwellness.arogyapatra.data.repository.ArogyaRepository
 import com.aidwellness.arogyapatra.pdf.PdfGenerator
 import com.aidwellness.arogyapatra.ui.components.*
@@ -43,6 +45,7 @@ fun HomeScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val adView = rememberAdView()
+    val nativeAd = rememberNativeAd()
 
     val doctorProfile by repository.getDoctorProfile().collectAsState(initial = null)
     val clinicProfile by repository.getClinicProfile().collectAsState(initial = null)
@@ -102,150 +105,158 @@ fun HomeScreen(
                             text = if (clinicProfile?.clinicName.isNullOrBlank()) "Your Clinic" else clinicProfile?.clinicName!!,
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = Color.White.copy(alpha = 0.85f)
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
-        }
 
-        // 2. Quick Actions Section
-        item {
-            Text(
-                text = "Quick Actions",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                QuickActionButton(
-                    title = "+ New Cert",
-                    icon = Icons.Default.AddCircle,
-                    backgroundColor = EmeraldTealPrimary,
-                    contentColor = Color.White,
-                    onClick = onNewCertificateClick,
-                    modifier = Modifier.weight(1f)
-                )
-                QuickActionButton(
-                    title = "Add Patient",
-                    icon = Icons.Default.PersonAdd,
-                    backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                    onClick = onCreatePatientClick,
-                    modifier = Modifier.weight(1f)
-                )
-                QuickActionButton(
-                    title = "Templates",
-                    icon = Icons.Default.Article,
-                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    onClick = onTemplatesClick,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        // 3. Statistics Section
-        item {
-            Text(
-                text = "Dashboard Overview",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                StatsCard(
-                    title = "Certificates Today",
-                    value = todayCount.toString(),
-                    icon = Icons.Default.Today,
-                    modifier = Modifier.weight(1f)
-                )
-                StatsCard(
-                    title = "This Month",
-                    value = monthCount.toString(),
-                    icon = Icons.Default.DateRange,
-                    modifier = Modifier.weight(1f)
-                )
-                StatsCard(
-                    title = "Total Patients",
-                    value = patientCount.toString(),
-                    icon = Icons.Default.Groups,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        // 4. Recent Certificates Header
-        item {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            // 2. Quick Actions Section
+            item {
                 Text(
-                    text = "Recent Certificates",
+                    text = "Quick Actions",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
-                Text(
-                    text = "${recentCertificates.size} Total",
-                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                )
-            }
-        }
-
-        // Recent Certificates List
-        if (recentCertificates.isEmpty()) {
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp),
-                    contentAlignment = Alignment.Center
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = "No certificates issued yet. Click '+ New Cert' to generate your first document.",
-                        style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)),
-                        fontSize = 13.sp
+                    QuickActionButton(
+                        title = "+ New Cert",
+                        icon = Icons.Default.AddCircle,
+                        backgroundColor = EmeraldTealPrimary,
+                        contentColor = Color.White,
+                        onClick = onNewCertificateClick,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickActionButton(
+                        title = "Add Patient",
+                        icon = Icons.Default.PersonAdd,
+                        backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        onClick = onCreatePatientClick,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickActionButton(
+                        title = "Templates",
+                        icon = Icons.Default.Article,
+                        backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        onClick = onTemplatesClick,
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
-        } else {
-            items(recentCertificates.take(5)) { cert ->
-                CertificateItemCard(
-                    certificate = cert,
-                    onPreviewClick = { onCertificatePreviewClick(cert.id) },
-                    onShareClick = {
-                        coroutineScope.launch {
-                            val doc = repository.getDoctorProfileDirect()
-                            val clinic = repository.getClinicProfileDirect()
-                            val pdfFile = PdfGenerator.generateCertificatePdf(context, cert, doc, clinic)
-                            pdfFile?.let { PdfGenerator.sharePdf(context, it) }
-                        }
-                    },
-                    onPdfClick = { onCertificatePreviewClick(cert.id) }
-                )
-            }
-        }
 
-        // 5. Non-Intrusive AdMob Banner
-        adView?.let { ad ->
+            // 2b. Native Advanced Ad Card (User-friendly and highly visible integration)
+            nativeAd?.let { ad ->
+                item {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    NativeAdCard(nativeAd = ad)
+                }
+            }
+
+            // 3. Statistics Section
+            item {
+                Text(
+                    text = "Dashboard Overview",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    StatsCard(
+                        title = "Certificates Today",
+                        value = todayCount.toString(),
+                        icon = Icons.Default.Today,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatsCard(
+                        title = "This Month",
+                        value = monthCount.toString(),
+                        icon = Icons.Default.DateRange,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatsCard(
+                        title = "Total Patients",
+                        value = patientCount.toString(),
+                        icon = Icons.Default.Groups,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            // 4. Recent Certificates Header
+            item {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Recent Certificates",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                        text = "${recentCertificates.size} Total",
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                    )
+                }
+            }
+
+            // Recent Certificates List
+            if (recentCertificates.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No certificates issued yet. Click '+ New Cert' to generate your first document.",
+                            style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)),
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+            } else {
+                items(recentCertificates.take(5)) { cert ->
+                    CertificateItemCard(
+                        certificate = cert,
+                        onPreviewClick = { onCertificatePreviewClick(cert.id) },
+                        onShareClick = {
+                            coroutineScope.launch {
+                                val doc = repository.getDoctorProfileDirect()
+                                val clinic = repository.getClinicProfileDirect()
+                                val pdfFile = PdfGenerator.generateCertificatePdf(context, cert, doc, clinic)
+                                pdfFile?.let { PdfGenerator.sharePdf(context, it) }
+                            }
+                        },
+                        onPdfClick = { onCertificatePreviewClick(cert.id) }
+                    )
+                }
+            }
+
+            // 5. Non-Intrusive AdMob Banner
+            adView?.let { ad ->
+                item {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    BannerAdView(adView = ad)
+                }
+            }
+
+            // 6. Legal Safeguard Banner
             item {
                 Spacer(modifier = Modifier.height(4.dp))
-                BannerAdView(adView = ad)
+                LegalSafeguardBanner()
             }
         }
-
-        // 6. Legal Safeguard Banner
-        item {
-            Spacer(modifier = Modifier.height(4.dp))
-            LegalSafeguardBanner()
-        }
     }
-}
 
 @Composable
 private fun QuickActionButton(

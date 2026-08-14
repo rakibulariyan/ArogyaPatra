@@ -6,7 +6,8 @@ import com.google.android.gms.ads.MobileAds
 
 object AdManager {
 
-    private var isInitialized = false
+    var isInitialized = false
+        private set
 
     fun initialize(context: Context) {
         if (isInitialized) return

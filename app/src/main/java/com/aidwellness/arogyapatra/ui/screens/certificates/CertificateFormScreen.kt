@@ -1,5 +1,6 @@
 package com.aidwellness.arogyapatra.ui.screens.certificates
 
+import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -320,12 +321,19 @@ fun CertificateFormScreen(
                                 customContent = customContent.ifBlank { null }
                             )
 
-                            val insertedId = repository.insertCertificate(newCert)
-                            appSettings?.let {
-                                repository.updateAppSettings(it.copy(certificateCounter = counter + 1))
-                            }
-                            onGeneratePreview(insertedId)
-                        }
+                             val insertedId = repository.insertCertificate(newCert)
+                             appSettings?.let {
+                                 repository.updateAppSettings(it.copy(certificateCounter = counter + 1))
+                             }
+                             val activity = context as? Activity
+                             if (activity != null) {
+                                 com.aidwellness.arogyapatra.ads.InterstitialAdManager.showAdIfReady(activity) {
+                                     onGeneratePreview(insertedId)
+                                 }
+                             } else {
+                                 onGeneratePreview(insertedId)
+                             }
+                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
